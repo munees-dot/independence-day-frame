@@ -570,6 +570,17 @@ whatsappBtn.addEventListener('click', () => {
   }, 'image/png');
 });
 
+// --- Silent visitor counter (no login needed) -------------------------
+// Uses the free hit-counter badge service (hits.sh) to add +1 each time
+// this page loads. Nothing is shown to visitors — the teacher can check
+// the total anytime by opening the "check" link in a browser, which
+// shows a small badge image with the current count.
+(function () {
+  const KEY = 'gmup-kannamangalam-idcard-2026'; // unique counter name
+  const img = new Image();
+  img.src = `https://hits.sh/${encodeURIComponent(KEY)}.svg?style=flat`;
+  // Loading the image is what registers the hit; nothing is inserted into the page.
+})();
 </script>
 </body>
 </html>
