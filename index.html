@@ -188,6 +188,14 @@
     margin-top:20px;
   }
   .btn-primary:disabled{opacity:0.45;cursor:not-allowed;box-shadow:none;}
+  .btn-whatsapp{
+    background:linear-gradient(135deg,#25D366,#1DA851);
+    color:#fff;
+    box-shadow:0 8px 20px -8px rgba(29,168,81,0.55);
+    margin-top:10px;
+  }
+  .btn-whatsapp:disabled{opacity:0.45;cursor:not-allowed;box-shadow:none;}
+  .btn-whatsapp svg{width:17px;height:17px;}
   .btn-primary svg{width:16px;height:16px;}
 
   /* Preview column */
@@ -269,6 +277,11 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
       Download greeting
     </button>
+
+    <button class="btn btn-whatsapp" id="whatsappBtn" disabled>
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12.001 2C6.478 2 2 6.478 2 12c0 1.85.5 3.617 1.437 5.16L2 22l4.972-1.417A9.958 9.958 0 0 0 12.001 22C17.523 22 22 17.523 22 12S17.523 2 12.001 2zm0 18.15c-1.68 0-3.259-.47-4.612-1.286l-.331-.196-3.06.872.858-3.026-.216-.34A8.13 8.13 0 0 1 3.85 12c0-4.494 3.657-8.15 8.151-8.15S20.15 7.506 20.15 12c0 4.495-3.657 8.15-8.149 8.15z"/></svg>
+      Share on WhatsApp
+    </button>
   </div>
 
   <div class="preview-col">
@@ -301,6 +314,7 @@ const zoomSlider = document.getElementById('zoomSlider');
 const nameInput = document.getElementById('nameInput');
 const classInput = document.getElementById('classInput');
 const downloadBtn = document.getElementById('downloadBtn');
+const whatsappBtn = document.getElementById('whatsappBtn');
 
 let templateImg = new Image();
 let templateReady = false;
@@ -344,6 +358,7 @@ function loadPhoto(file){
       drawCropStage();
       drawPoster();
       downloadBtn.disabled = false;
+      whatsappBtn.disabled = false;
     };
     img.src = e.target.result;
   };
@@ -521,6 +536,40 @@ downloadBtn.addEventListener('click', () => {
   link.href = posterCanvas.toDataURL('image/png');
   link.click();
 });
+
+function posterFileName(){
+  const name = nameInput.value.trim().replace(/\s+/g,'_') || 'independence_day';
+  return `${name}_gmup_kannamangalam.png`;
+}
+
+whatsappBtn.addEventListener('click', () => {
+  posterCanvas.toBlob(async (blob) => {
+    if(!blob) return;
+    const file = new File([blob], posterFileName(), { type: 'image/png' });
+    const shareText = 'Happy Independence Day! 🇮🇳 — GMUP School Kannamangalam';
+
+    // Best path: native share sheet with the image file pre-attached (works great on mobile, opens WhatsApp directly).
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      try {
+        await navigator.share({ files: [file], title: 'Independence Day Greeting', text: shareText });
+        return;
+      } catch (err) {
+        if (err && err.name === 'AbortError') return; // user cancelled
+        // fall through to fallback below
+      }
+    }
+
+    // Fallback (desktop / unsupported browsers): download the image, then open WhatsApp
+    // with the caption ready so it can be attached manually in one extra tap.
+    const link = document.createElement('a');
+    link.download = posterFileName();
+    link.href = URL.createObjectURL(blob);
+    link.click();
+    const waText = encodeURIComponent(shareText + ' (photo downloaded — attach it here)');
+    window.open(`https://wa.me/?text=${waText}`, '_blank');
+  }, 'image/png');
+});
+
 </script>
 </body>
 </html>
